@@ -1,0 +1,13 @@
+
+
+1 什么是goroutines
+They’re not OS threads, and they’re not exactly green
+threads—threads that are managed by a language’s runtime—they’re a higher level of
+abstraction known as coroutines. Coroutines are simply concurrent subroutines
+(functions, closures, or methods in Go) that are nonpreemptive—that is, they cannot
+be interrupted. Instead, coroutines have multiple points throughout which allow for
+suspension or reentry.
+
+goroutines managed by go runtime. go runtime observes the runtime behavior of
+goroutines and automatically suspends them when they block and then resumes them when they 
+become unblocked.
