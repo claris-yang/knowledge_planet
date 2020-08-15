@@ -4,6 +4,8 @@ import scala.io.StdIn
 import scala.math.{BigInt, pow, sqrt}
 import scala.math.{max, min}
 
+
+
 object StTable {
 
   val N = 1005
@@ -18,11 +20,6 @@ object StTable {
       st(i)(0) = StdIn.readInt()
     }
 
-    for( i <- 1 to n) {
-      lg(i) = lg( i - 1 ) + (1 << (i - 1)) == i)
-    }
-
-    for( j <- 1 to n
   }
 
   def query(l : Int, r : Int) : Int = {
