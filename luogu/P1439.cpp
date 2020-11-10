@@ -7,29 +7,40 @@
 #include<cstring>
 #include<algorithm>
 using namespace std;
-const int N = 10005;
-int f[N][N];
-int a[N], b[N];
-int n;
+const int N = 1e5 + 5;
+int a[N], b[N], c[N] ;
+int bucket[N];
+int n, l, r, cnt;
 int main() {
     cin >> n;
     for(int i = 1; i <= n; i++) {
         scanf("%d", &a[i]);
+        bucket[a[i]] = i;
     }
     for(int i =1; i <=n ; i++) {
         scanf("%d", &b[i]);
+        c[i] = bucket[b[i]];
     }
 
-    int res = 0 ;
     for(int i = 1; i <=n; i++) {
-        for(int j = 1; j <=n ; j++) {
-            f[i][j] = max(f[i-1][j], f[i][j-1]);
-            if(a[i] == b[j]) {
-                f[i][j] = max(f[i][j], f[i-1][j-1] + 1);
+        if( c[i] > a[cnt]) {
+            a[++cnt] = c[i];
+        } else {
+            l = 1, r = cnt;
+            int p = 0;
+            while(l <= r) {
+                int mid = l + r >> 1;
+                if ( a[mid] >= c[i]) {
+                    p = mid;
+                    r = mid - 1;
+                } else {
+                    l = mid + 1;
+                }
             }
-            res = max(res, f[i][j]);
+            a[l] = c[i];
         }
     }
-    cout << res << endl;
+
+    cout << cnt << endl;
     return 0;
 }

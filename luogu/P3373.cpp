@@ -1,114 +1,104 @@
 //
-// Created by yangtao on 20-7-13.
+// Created by yangtao on 20-10-9.
 //
-
 #include <iostream>
 #include <cstring>
 #include <cstdio>
 #include <algorithm>
 using namespace std;
-const int N = 1e5 + 5;
 typedef long long ll;
-ll a[N*2], tree[N*2], addtag[N*2], multag[N*2];
-ll n, m, p;
-ll lc(ll root) {
-    return root << 1;
+const int N = 1e5 + 5;
+ll tree[N<<2], tag[N<<2], tagm[N<<2], a[N];
+inline int lc(int p) {
+    return p << 1;
 }
-ll rc(ll root) {
-    return root << 1 | 1;
+inline int rc(int p) {
+    return p << 1 | 1;
 }
-void pushUp(ll root) {
-    tree[root] = (tree[lc(root)] + tree[rc(root)] ) % p;
+int n,m, P;
+void movetag(int p, int l , int r, ll w, ll w2) {
+    tagm[p] *= w % P;
+    tree[p] *= w % P;
+    tag[p] *= w;
+    tag[p] += w2;
+    tree[p] += (r-l+1)*w2;
+    tree[p] %= P;
+    tag[p] %= P;
+    tagm[p] %= P;
 }
-
-void moveTag(ll child, ll l, ll r, ll root) {
-    multag[child] = (multag[child] * multag[root]) % p;
-    addtag[child] = (addtag[child] * multag[root] + addtag[root]) % p;
+void pushdown(int p, int l , int r) {
+    int mid = (l + r) >> 1;
+    movetag(lc(p), l, mid, tagm[p], tag[p]);
+    movetag(rc(p), mid + 1, r,  tagm[p], tag[p]);
+    tag[p] = 0;
+    tagm[p] = 1;
 }
-
-void pushDown(ll root, ll l, ll r) {
-    ll mid = l + r >> 1;
-    tree[lc(root)] =  tree[lc(root)] * multag[root]   % p;
-    tree[lc(root)] = ((mid - l + 1) * addtag[root] + tree[lc(root)] ) % p;
-    tree[rc(root)] =  tree[rc(root)] * multag[root]   % p;
-    tree[rc(root)] = ((r - mid + 1) * addtag[root] + tree[rc(root)] ) % p;
-
-    moveTag(lc(root), l, mid, root);
-    moveTag(rc(root), mid + 1, r, root);
-    addtag[root] = 0;
-    multag[root] = 1;
+void pushup(int p , int l , int r) {
+    tree[p] = (tree[lc(p)] + tree[rc(p)]) % P;
 }
-
-void update1(ll root, ll l, ll r, ll lq, ll rq, ll k) {
-    if(lq <= l && rq >= r) {
-        tree[root] = tree[root] * k % p;
-        multag[root] = (multag[root] * k) % p;
-        addtag[root] = (addtag[root] * k) % p;
-        return ;
-    }
-    pushDown(root, l , r);
-    ll mid = l + r >> 1;
-    if(lq <= mid) update1(lc(root), l , mid , lq, rq, k);
-    if(mid < rq)  update1(rc(root), mid + 1, r, lq, rq, k);
-    pushUp(root);
-}
-
-void update2(ll root, ll l, ll r, ll lq, ll rq, ll k) {
-    if(lq <= l && rq >= r) {
-        tree[root] = (tree[root] + k * (r - l + 1) )  % p;
-        addtag[root] = (addtag[root] + k) % p;
-        return ;
-    }
-    pushDown(root, l , r);
-    ll mid = l + r >> 1;
-    if(lq <= mid) update2(lc(root), l , mid , lq, rq, k);
-    if(mid < rq) update2(rc(root), mid + 1, r, lq, rq, k);
-    pushUp(root);
-}
-
-void build(ll root, ll l , ll r) {
-    if(l == r) {
-        tree[l] = a[l] % p;
+void update(int p, int l , int r, int ql, int qr, ll w, ll w2) {
+    if(l >= ql && r <= qr) {
+        movetag(p, l, r, w, w2);
         return;
     }
-    ll mid = l + r >> 1;
-    build(lc(root), l, mid);
-    build(rc(root), mid + 1, r);
-    pushUp(root);
-    multag[root] = 1;
-}
-
-ll query(ll root, ll l, ll r, ll lq, ll rq) {
-    if(lq <= l && rq >= r) {
-        return tree[root];
+    pushdown(p, l, r);
+    int mid = l + r >> 1;
+    if(ql <= mid) {
+        update(lc(p), l, mid, ql, qr, w, w2);
     }
+    if( qr > mid ) {
+        update(rc(p), mid + 1, r, ql, qr, w, w2);
+    }
+    pushup(p, l, r);
+}
+void buildTree(int p, int l , int r) {
+    tag[p] = 0;
+    tagm[p] = 1;
+    if(l == r) {
+        tree[p] = a[l];
+        return ;
+    }
+    int mid = l + r >> 1;
+    buildTree(lc(p), l , mid);
+    buildTree(rc(p), mid + 1, r);
+    pushup(p, l, r);
+}
+ll query(int p, int l , int r, int ql, int qr) {
+    if( l >= ql && r <= qr) {
+        return tree[p];
+    }
+    pushdown(p, l , r);
+    int mid = l + r >> 1;
     ll res = 0;
-    pushDown(root, l , r);
-    ll mid = l + r >> 1;
-    if(lq <= mid) res =  query(lc(root), l , mid, lq, rq) % p;
-    if(mid < rq)  res =  (res + query(rc(root), mid + 1, r, lq, rq) ) % p;
+    if( ql <= mid ) {
+        res += query(lc(p), l , mid, ql, qr);
+    }
+    if( qr > mid) {
+        res += query(rc(p), mid  + 1, r, ql, qr);
+    }
+    res %= P;
     return res;
 }
-
 int main() {
-    cin >> n >> m >> p;
-    for(int i = 1; i <= n; i++ ) scanf("%lld", &a[i]);
-    build(1, 1, n);
 
-    for(int i = 1; i <=m; i++) {
-        ll t, x, y, k;
-        scanf("%lld%lld%lld", &t, &x, &y);
-        if(t == 1) {
-            scanf("%lld", &k);
-            update1(1, 1, n, x, y, k);
-        } else if (t == 2) {
-            scanf("%lld", &k);
-            update2(1, 1, n, x, y, k);
-        } else {
-            printf("%lld\n", query(1, 1, n, x, y));
+    scanf("%d%d%d", &n, &m, &P);
+    for(int i = 1; i <=n; i++) {
+        scanf("%lld", &a[i]);
+    }
+    buildTree(1, 1, n);
+    for(int i = 1; i <= m; i++) {
+        int opt, l , r, k;
+        scanf("%d%d%d", &opt, &l , &r);
+        if(opt == 1) {
+            scanf("%d", &k);
+            update(1, 1, n, l , r , k, 0);
+        } else if (opt == 2) {
+            scanf("%d", &k);
+            update(1, 1, n, l, r, 1, k);
+
+        } else if (opt == 3) {
+            printf("%lld\n", query(1, 1, n, l , r));
         }
     }
     return 0;
-
 }
-

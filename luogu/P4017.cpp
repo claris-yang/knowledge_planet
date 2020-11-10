@@ -7,24 +7,25 @@
 #include <algorithm>
 using namespace std;
 const int N = 500005;
-int e[N], ne[N], h[N], z[N];
+const int P = 80112002;
+int e[N], ne[N], h[N], z[N], cnt[N];
 int idx, n, m;
 void add(int u, int v) {
     e[idx] = v, ne[idx] = h[u], h[u] = idx++;
 }
-int vis[N],ans, res;
+int vis[N],ans;
 
 int dfs(int x) {
-
+    if(cnt[x]) return cnt[x];
+    vis[x] = 1;
     int t = 1;
     for(int i = h[x] ; ~i; i = ne[i]) {
         int v = e[i];
         if(vis[v]) continue;
-        vis[i] = 1;
-        t += dfs(v);
+        t = (t + dfs(v)) % P;
     }
 
-    return res *= t;
+    return cnt[x] = t;
 }
 int main() {
 
@@ -39,11 +40,9 @@ int main() {
     }
     for(int i = 1; i <= n; i++) {
         if(!z[i]) {
-            res = 1;
             if(!vis[i]) {
                 memset(vis, 0 , sizeof(vis));
-                vis[i] = 1;
-                ans += dfs(i);
+                ans = max(ans, dfs(i));
             }
         }
     }
