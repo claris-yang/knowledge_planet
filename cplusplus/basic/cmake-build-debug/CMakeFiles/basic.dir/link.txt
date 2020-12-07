@@ -1,0 +1,1 @@
+/usr/bin/cc -g   CMakeFiles/basic.dir/main.c.o  -o basic 

@@ -7,6 +7,10 @@
 #include <algorithm>
 #include <set>
 #include <vector>
+/*
+ *  如果出价只剩下一个人， 那么肯定取这个人的最低价
+ *  如果出价剩下大于1个人，倒数第二个人的最大价格的下一个价格。
+ * */
 using namespace std;
 const int N = 2e6 + 5;
 vector<int> v[N], d;
@@ -31,8 +35,10 @@ int main() {
         for(int i = 1; i <= m; i++) {
             int x;
             scanf("%d", &x);
-            s.erase(x);
-            d.push_back(x);
+            if(s.count(x)) {
+                s.erase(x);
+                d.push_back(x);
+            }
         }
         if(s.size() == 0 ) {
             printf("%d %d\n", 0, 0);
@@ -44,7 +50,7 @@ int main() {
             auto it1 = s.end();
             --it1; --it1; --it2;
             int last = mmax[*it1];
-            auto it = upper_bound( v[*it2].begin(), v[*it2].end(), last);
+            auto it = upper_bound( v[*it2].begin(), v[*it2].end(), v[*it1].back());
 //            if( it != v[*it2].end() )
                 printf("%d %d\n", *it2, *it);
 //            else {
